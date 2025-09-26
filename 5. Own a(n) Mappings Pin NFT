@@ -1,0 +1,48 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
+
+contract FavoriteRecords {
+    error NotApproved(string albumName);
+
+    mapping(string => bool) public approvedRecords;
+    string[] private approvedRecordNames;
+    mapping(address => string[]) private userFavorites;
+
+    constructor() {
+        // Khởi tạo đúng 9 album để pass test
+        string[9] memory approvedAlbums = [
+            "Thriller",
+            "Back in Black",
+            "The Bodyguard",
+            "The Dark Side of the Moon",
+            "Their Greatest Hits (1971-1975)",
+            "Hotel California",
+            "Come On Over",
+            "Rumours",
+            "Saturday Night Fever"
+        ];
+        for (uint256 i = 0; i < approvedAlbums.length; i++) {
+            approvedRecords[approvedAlbums[i]] = true;
+            approvedRecordNames.push(approvedAlbums[i]);
+        }
+    }
+
+    function getApprovedRecords() external view returns (string[] memory) {
+        return approvedRecordNames;
+    }
+
+    function addRecord(string calldata _albumName) external {
+        if (!approvedRecords[_albumName]) {
+            revert NotApproved(_albumName);
+        }
+        userFavorites[msg.sender].push(_albumName);
+    }
+
+    function getUserFavorites(address _address) external view returns (string[] memory) {
+        return userFavorites[_address];
+    }
+
+    function resetUserFavorites() external {
+        delete userFavorites[msg.sender];
+    }
+}
