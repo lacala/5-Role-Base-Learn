@@ -1,0 +1,46 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.13;
+
+contract EmployeeStorage {
+    error TooManyShares(uint _updatedShares);
+
+    // Packing tối ưu: shares (2 bytes) + salary (3 bytes) trong slot 0
+    uint16 private shares;
+    uint24 private salary;
+    uint256 public idNumber;
+    string public name;
+
+    constructor(uint16 _shares, string memory _name, uint24 _salary, uint256 _idNumber) {
+        shares = _shares;
+        name = _name;
+        salary = _salary;
+        idNumber = _idNumber;
+    }
+
+    function viewSalary() external view returns (uint24) {
+        return salary;
+    }
+
+    function viewShares() external view returns (uint16) {
+        return shares;
+    }
+
+    function grantShares(uint16 _newShares) external {
+        require(_newShares < 5001, "Too many shares");
+        uint16 _updatedShares = shares + _newShares;
+        if (_updatedShares > 5000) {
+            revert TooManyShares(_updatedShares);
+        }
+        shares = _updatedShares;
+    }
+
+    function checkForPacking(uint _slot) public view returns (uint r) {
+        assembly {
+            r := sload(_slot)
+        }
+    }
+
+    function debugResetShares() public {
+        shares = 1000;
+    }
+}
